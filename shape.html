@@ -30,6 +30,11 @@
 	var old_x, old_y;
 	var mouseDown = false;
 	var zPlane = 20;
+	var fillSurfaces = true; pointsOnly = false;
+	var started = false;
+	var zPlane = 0;
+	var observer = {x: 0, y: 0, z: 0};
+	var light = {x: 10, y: 0, z: 0};
 	
 	
 	var RxElement;
@@ -59,7 +64,7 @@
 			var x = parseFloat(coordsString[0]);
 			var y = parseFloat(coordsString[1]);
 			var z = parseFloat(coordsString[2]);
-			console.log("(" + x + ", " + y + ", " + z +")");
+			//console.log("(" + x + ", " + y + ", " + z +")");
 			if (!isNaN(x) && !isNaN(y) && !isNaN(z)) defineVertex(x, y, z);
 		}
 		
@@ -80,7 +85,7 @@
 					if(!isNaN(v_index)) s.push(v_index);
 				} 
 				defineSurface(s, num_vertices);	
-				console.log(s);
+				//console.log(s);
 			}		
 		}
 		
@@ -143,11 +148,8 @@
 	function surfaceCentroid(surface) {
 		// Returns the coordinates of the centroid of the surface
 		var cx = 0, cy = 0, cz = 0;
-		//console.log(vertices[8]);
 		for (var i=0; i<surface.n; i++) {
 			v_index = surface.v[i];
-			//console.log(" vertex: " + v_index);
-			//console.log(vertices[v_index]);
 			cx+= vertices[v_index].x; 
 			cy+= vertices[v_index].y; 
 			cz+= vertices[v_index].z; 
@@ -173,7 +175,7 @@
 	
 	function drawVertices() {
 		for (var i in vertices) {
-			var p = intersectPlaneZ5(vertices[i]);
+			var p = intersectZPlane(vertices[i]);
 			context.putImageData(imgd, xToCanvas(p.x), yToCanvas(p.y));
 		}
 	}
@@ -184,24 +186,29 @@
 		context.strokeStyle = '#aaaaaa';
 		context.fillStyle="#666666";
 		context.fillStyle = '#aaaaaa';
-		context.lineWidth=2;
-		for (var i in surfaces) {
+		context.lineWidth=1;
+		for (var i in indexedSurfaces) {
 			j = indexedSurfaces[i].index;
-			num_v = surfaces[j].n;  // This is the number of vertices in this particular surface
-			p = intersectZPlane(vertices[surfaces[j].v[0]]);
+			currentSurface = surfaces[j]
+			num_v = currentSurface.n;  // This is the number of vertices in this particular surface
+			p = intersectZPlane(vertices[currentSurface.v[0]]);
 			context.beginPath();
 			context.moveTo(xToCanvas(p.x), yToCanvas(p.y));
 			for(var k=1; k<num_v; k++) {
-				p = intersectZPlane(vertices[surfaces[j].v[k]]);
+				p = intersectZPlane(vertices[currentSurface.v[k]]);
 				context.lineTo(xToCanvas(p.x), yToCanvas(p.y));
 			}
 			context.closePath();
 			colour = Math.floor(128+128*incidentLight(surfaces[j], light));
-			context.strokeStyle = 'rgb(' + colour + ', ' + colour + ', ' + colour + ')';
-			context.fillStyle = 'rgb(' + colour + ', ' + colour + ', ' + colour + ')';
-			context.stroke();
+			colourStr = 'rgb(' + colour + ', ' + colour + ', ' + colour + ')';
+			if (num_v == 3) colourStr = 'rgb( 0, 0, ' + colour + ')';
+			if (num_v == 4) colourStr = 'rgb( 0, ' + colour + ', 0)';
+			 
+			context.strokeStyle = colourStr;
+			context.fillStyle = colourStr;
 			
-			//context.fill();
+			
+			if (fillSurfaces) context.fill(); else context.stroke();
 		}
 	}
 
@@ -211,21 +218,36 @@
 		centerOrigin(vertices);
 		var max = getMaxVertex(vertices);
 		console.log("Max extent: " + max);
-		scale = height/(max * 1.4); 
+		scale = height/(max * 0.3); 
 		
-		// Put the z-screen 30% further away. 
-		zPlane = max * 1.3;
+		// Put the z-screen 100% further away. 
+		zPlane = max * 1.2;
 		
-		// Put the observer 50% further away
-		var observer = {x: 0, y: 0, z: max*1.4};
-		
-		// Put the light 10 times further away
-		var light = {x: 10, y: 0, z: max*10};
+		// Put the observer 30% further away
+		observer = {x: 0, y: 0, z: zPlane *1.3};
+		console.log("Observer", observer);
+		console.log("z-plane: ", zPlane);
+		// Put the light 5 times further away
+		light = {x: max*0.5, y: 0, z: max*5};
 		
 	}
+	
+	function toggleFillSurfaces() {
+		fillSurfaces = !fillSurfaces;
+		//drawShapeBySurfaces();
+	}
+
+	function togglePointsOnly() {
+		pointsOnly = !pointsOnly;
+		//drawShapeBySurfaces();
+	}
+
 		
 	function startUp() {
-		intervalID = setInterval(animate, 20);
+		if (!started) {
+			intervalID = setInterval(animate, 20);
+			started = true;
+		}
 	}
 	
 	function animate() {
@@ -234,8 +256,8 @@
 			rotate_z(rzstep, vertices);
 			rotate_x(rxstep, vertices);
 			rotate_y(rystep, vertices);
-			drawShapeBySurfaces();
-			//drawVertices();
+			if (!pointsOnly) drawShapeBySurfaces();
+			   else drawVertices();
 		}
 	}
 	
@@ -256,13 +278,13 @@
 
 	
 	function yToCanvas(y) {
-		var ypos = height/2 - y * scale;
-		return Math.round(ypos);
+		ypos = height/2.0 - y * scale;
+		return ypos;
 	}
 
 	function xToCanvas(x) {
-		var xpos = width/2 + x * scale;
-		return Math.round(xpos);
+		xpos = width/2.0 + x * scale;
+		return xpos;
 	}
 		
 	function canvasSupport() {
@@ -340,7 +362,7 @@
 		
 
    		imgd = context.createImageData(1,1);
-    	var pix = imgd.data;
+    	pix = imgd.data;
     	pix[3] = 255; // alpha channel
 		console.log("Defined canvas");
 	}
@@ -353,17 +375,19 @@
 	<body>
 		<h1>Shapes in HTML5</h1>
 	    <select id = "object" onChange ="loadNewObject()">
-	               <option value = "teapot">teapot</option>
+	               <option value = "teapot" selected>teapot</option>
 	               <option value = "x29_plane">plane</option>
 	               <option value = "space_shuttle">spaceship</option>
 	               <option value = "apple">apple</option>
-	               <option value = "volks" selected>volks</option>
+	               <option value = "volks">volks</option>
 	               <option value = "seashell">seashell</option>
 	               <option value = "butterfly">butterfly</option>
 	               <option value = "fish">fish</option>
 	               <option value = "m416">m416</option>
 	               <option value = "m1313">m1313</option>
 	             </select>
+		<input type="checkbox" onclick="toggleFillSurfaces()" checked>Fill surfaces
+		<input type="checkbox" onclick="togglePointsOnly()">Vertices only
 		<br/>
 		<canvas id="myCanvas" width="800" height="500">
 		Fallback content, in case the browser does not support Canvas.
@@ -381,14 +405,4 @@
 <p>The definitions of the objects have been taken from <a href="http://www.holmes3d.net/graphics/offfiles/">Holmes3D.net</a>.
 </p>
 </body>
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-41374131-1', 'devicecloud.co.uk');
-  ga('send', 'pageview');
-
-</script>
 </html>
