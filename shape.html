@@ -73,6 +73,7 @@
 		// Now get the surfaces...
 		surfaceDefinitions = verticesLinesSplit[1].split("\n");
 		
+
 		console.log(surfaceDefinitions.length + " surfaces in the file.")
 		
 		for (var i in surfaceDefinitions) {
@@ -218,13 +219,13 @@
 		centerOrigin(vertices);
 		var max = getMaxVertex(vertices);
 		console.log("Max extent: " + max);
-		scale = height/(max * 0.3); 
+		scale = height/(max * 0.5); 
 		
 		// Put the z-screen 100% further away. 
-		zPlane = max * 1.2;
+		zPlane = max * 1.5;
 		
 		// Put the observer 30% further away
-		observer = {x: 0, y: 0, z: zPlane *1.3};
+		observer = {x: 0, y: 0, z: zPlane *1.5};
 		console.log("Observer", observer);
 		console.log("z-plane: ", zPlane);
 		// Put the light 5 times further away
@@ -385,6 +386,19 @@
 	               <option value = "fish">fish</option>
 	               <option value = "m416">m416</option>
 	               <option value = "m1313">m1313</option>
+	               <option value = "sword">sword</option>
+	               <option value = "goblet">goblet</option>
+	               <option value = "asu">asu</option>
+	               <option value = "dragon">dragon</option>
+	               <option value = "space_station">space_station</option>
+	               <option value = "head">head</option>
+	               <option value = "heart">heart</option>
+	               <option value = "king">king</option>
+	               <option value = "klingon">klingon</option>
+	               <option value = "mushroom">mushroom</option>
+	               <option value = "pear">pear</option>
+	               <option value = "r2">r2</option>
+	
 	             </select>
 		<input type="checkbox" onclick="toggleFillSurfaces()" checked>Fill surfaces
 		<input type="checkbox" onclick="togglePointsOnly()">Vertices only
