@@ -19,9 +19,9 @@
 	var height;
 	var imgd;
 	var scale;
-	var rxstep = 0;
-	var rzstep = 0;
-	var rystep = 0;
+	var rxstep = 0.1;
+	var rzstep = 0.01;
+	var rystep = 0.3;
 	var observer = {x: 0, y: 0, z:30};
 	var light = {x: 10, y: 0, z: 300};
 	var dataLoaded = false;
@@ -36,21 +36,14 @@
 	var observer = {x: 0, y: 0, z: 0};
 	var light = {x: 10, y: 0, z: 0};
 	
-	
-	var RxElement;
-	var RzElement;
-	var RyElement;
-
 	function eventWindowLoaded() {
 		initCanvas();
 		clearCanvas();
 		RxElement = document.getElementById("rxElement");
-		RxElement.innerText = rxstep;
-		RyElement = document.getElementById("ryElement");
-		RyElement.innerText = rystep;
-		RzElement = document.getElementById("rzElement");
-		RzElement.innerText = rzstep;
-		loadShape("teapot.dat");
+		$("#rxElement").text(rxstep);
+		$("#ryElement").text(rystep);
+		$("#rzElement").text(rzstep);
+		loadShape("head.dat");
 	}
 	
 
@@ -94,8 +87,8 @@
 		
 		dataLoaded = true;
 		determineExtents();
-		rotate_x(-70, vertices);
-		rotate_y(-25, vertices);
+		rotate_x(0, vertices);
+		rotate_y(-90, vertices);
 		drawShapeBySurfaces();
 		startUp();
 	}
@@ -264,17 +257,21 @@
 	
 	function changeRx(delta) {
 		rxstep+= delta;
-		RxElement.innerText = rxstep;
+		rxstep = Math.round(rxstep*10) / 10;
+		$("#rxElement").text(rxstep);
 	}
 
 	function changeRz(delta) {
 		rzstep+= delta;
-		RzElement.innerText = rzstep;
+		rzstep = Math.round(rzstep*10) / 10;
+		$("#rzElement").text(rzstep);
 	}
 
 	function changeRy(delta) {
 		rystep+= delta;
-		RyElement.innerText = rystep;
+		rystep = Math.round(rystep*10) / 10;
+		$("#ryElement").text(rystep);
+		
 	}
 
 	
@@ -375,8 +372,10 @@
 
 	<body>
 		<h1>Shapes in HTML5</h1>
+		<b>Options</b><br/>
+		Choose object:
 	    <select id = "object" onChange ="loadNewObject()">
-	               <option value = "teapot" selected>teapot</option>
+	               <option value = "teapot">teapot</option>
 	               <option value = "x29_plane">plane</option>
 	               <option value = "space_shuttle">spaceship</option>
 	               <option value = "apple">apple</option>
@@ -391,7 +390,7 @@
 	               <option value = "asu">asu</option>
 	               <option value = "dragon">dragon</option>
 	               <option value = "space_station">space_station</option>
-	               <option value = "head">head</option>
+	               <option value = "head" selected>head</option>
 	               <option value = "heart">heart</option>
 	               <option value = "king">king</option>
 	               <option value = "klingon">klingon</option>
@@ -409,9 +408,9 @@
 
 <p>This is a 3D rendering of a simple shape.</p>
 <p>
-	Rx: <button id="decreaseRxElement" onclick="changeRx(-0.2)">-</button><span id="rxElement">0</span><button id="increaseRx" onclick="changeRx(0.2)">+</button> <br/>
-	Ry: <button id="decreaseRyElement" onclick="changeRy(-0.2)">-</button><span id="ryElement">0</span><button id="increaseRy" onclick="changeRy(0.2)">+</button> <br/>
-	Rz: <button id="decreaseRzElement" onclick="changeRz(-0.2)">-</button><span id="rzElement">0</span><button id="increaseRz" onclick="changeRz(0.2)">+</button> <br/>
+	Rx: <button id="decreaseRxElement" onclick="changeRx(-0.1)">-</button><span id="rxElement">0</span><button id="increaseRx" onclick="changeRx(0.1)">+</button> <br/>
+	Ry: <button id="decreaseRyElement" onclick="changeRy(-0.1)">-</button><span id="ryElement">0</span><button id="increaseRy" onclick="changeRy(0.1)">+</button> <br/>
+	Rz: <button id="decreaseRzElement" onclick="changeRz(-0.1)">-</button><span id="rzElement">0</span><button id="increaseRz" onclick="changeRz(0.1)">+</button> <br/>
 </p>
 	
 <p>This page does not make use of the OpenGL features available in HTML5. It simply uses basic mathematics/transformations and the <code>&lt;canvas&gt;</code> element.
