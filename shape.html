@@ -43,10 +43,26 @@
 		$("#rxElement").text(rxstep);
 		$("#ryElement").text(rystep);
 		$("#rzElement").text(rzstep);
-		loadShape("head.dat");
+		
+		var query = getQueryParams(document.location.search);
+		console.log("Query: ", query);
+		if (query.model!=null) {
+			loadShape(query.model + ".dat");
+			$('#object').val(query.model);
+		} else loadShape("head.dat");
 	}
 	
+	function getQueryParams(qs) {
+		qs = qs.split("+").join(" ");
 
+    		var params = {}, tokens,
+        	re = /[?&]?([^=]+)=([^&]*)/g;
+
+    		while (tokens = re.exec(qs)) {
+        		params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+    		}
+   		return params;
+	}
 	
 	function objectLoaded(data) {
 		//console.log(data);
@@ -76,7 +92,11 @@
 				var s = new Array();
 				for (i = 0; i<num_vertices; i++) {
 					v_index = parseInt(surfaceString[i+1]);
-					if(!isNaN(v_index)) s.push(v_index);
+					if(!isNaN(v_index)) {
+						s.push(v_index);
+					} else {
+						console.log('bad index', surfaceString[i+1]);
+					}
 				} 
 				defineSurface(s, num_vertices);	
 				//console.log(s);
@@ -133,7 +153,7 @@
 		var surface;
 		surface = {v: v, n: numVertices};
 		surfaces.push(surface);
-		console.log(surface);
+		//console.log(surface);
 		return surfaces.length;
 	}
 	
@@ -144,6 +164,7 @@
 		var cx = 0, cy = 0, cz = 0;
 		for (var i=0; i<surface.n; i++) {
 			v_index = surface.v[i];
+			if (vertices[v_index] == undefined) console.log('undefined vertex:', v_index);
 			cx+= vertices[v_index].x; 
 			cy+= vertices[v_index].y; 
 			cz+= vertices[v_index].z; 
@@ -401,6 +422,7 @@
 	               <option value = "mushroom">mushroom</option>
 	               <option value = "pear">pear</option>
 	               <option value = "r2">r2</option>
+	               <option value = "eta_carinae">eta_carinae</option>
 	
 	             </select>
 		<input type="checkbox" onclick="toggleFillSurfaces()" checked>Fill surfaces
